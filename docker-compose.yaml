@@ -1,0 +1,30 @@
+version: '3'
+services:
+  fix-mariadb-permissions:
+    image: bitnami/mariadb:latest
+    user: root
+    command: chown -R 1001:1001 /bitnami
+    volumes:
+      - db-playground-data:/bitnami/mariadb
+
+  ${DB_HOST}:
+    image: bitnami/mariadb:latest
+    user: root
+    ports:
+      - "${EXTERNAL_DB_PORT}:${DB_PORT}"
+    environment:
+      MARIADB_DATABASE: "${DB_NAME}"
+      MARIADB_USER: "${DB_USER}"
+      MARIADB_PASSWORD: "${DB_PASSWORD}"
+      MARIADB_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MARIADB_EXTRA_FLAGS: "--log-bin"
+    depends_on:
+      - fix-mariadb-permissions
+    volumes:
+      - db-playground-data:/bitnami/mariadb
+      - type: bind
+        source: ./example-data
+        target: /home/example-data
+
+volumes:
+  db-playground-data:
